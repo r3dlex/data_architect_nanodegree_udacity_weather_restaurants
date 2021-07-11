@@ -622,6 +622,23 @@ INSERT INTO Measurement(location_id, type_id, date, value, normalized_value)
      "WEATHER_RESTAURANTS"."STAGING"."PRECIPITATION_PER_INCH" as M;
 ```
 
+## File Sizes and Compression for Staging, ODS (Rubric Step - "Screenshot")
+
+The  following table is also available [here in ods format](data/sizes.ods):
+
+| File          | Size MB (RAW) | Size Compressed (STAGING) | C. Ratio (STAGING) | Size Entity MB (ODS) | C Ratio (ODS) |
+|---------------|---------------|---------------------------|--------------------|----------------------|---------------|
+| Covid Feature | 61,8          | 6,8                       | 11,00 %            | 5,3                  | 8,58 %        |
+| Business      | 118,6         | 20,9                      | 17,62 %            | 11                   | 9,27 %        |
+| Checkin       | 379,8         | 105,4                     | 27,75 %            | 94,4                 | 24,86 %       |
+| Review        | 6656          | 2764,8                    | 41,54 %            | 2560                 | 38,46 %       |
+| Tip           | 219,6         | 88,8                      | 40,44 %            | 73,3                 | 33,38 %       |
+| User          | 3481,6        | 2048                      | 58,82 %            | 2048                 | 58,82 %       |
+| Temperature   | 0,82          | 0,21                      | 25,61 %            | 0,17                 | 20,73 %       |
+| Precipitation | 0,58          | 0,15                      | 25,86 %            | 0,16                 | 27,59 %       |
+
+*NOTE: The compression ratios are calculated in relation to the RAW size*
+
 ## Converting from ODS into Datawarehouse (DWH)
 
 ### Architecture Diagram
