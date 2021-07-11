@@ -26,6 +26,8 @@ Description of screenshots needed for submission
    * SQL queries code necessary to move the data from ODS to DWH.
    * SQL queries code that reports the business name, temperature, precipitation, and ratings.
 
+*STUDENT NOTE: (Please not that instead of using images most of the screenshots are actually provided here as markdown script for my case)*
+
 ## Rubric
 
 The following criteria will be taken into consideration for the *staging*, *ODS* and *DWH* phases.
@@ -53,11 +55,9 @@ The following criteria will be taken into consideration for the *staging*, *ODS*
 
 |                                      Criteria                                      |                                                                                                    Meets Specifications                                                                                                   |
 |:----------------------------------------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| SWBAT use snowsql to transform data from staging to ODS.                           | Student provides SQL queries that transform staging to ODS.                                                                                                                                                               |
-| SWBAT expand and spread  JSON data into individual columns.                        | Student  provides SQL queries that use JSON functions to transform staging data  from a single JSON structure into multiple columns for ODS.                                                                              |
-| SWBAT calculate and compare data compression between raw files, staging, and ODS.  | Student  provides screenshot of a table with three columns: raw files, staging,  and ODS. Each column should record the size of the data in the  respective format. The table should have eight rows, one for each file.  |
-| SWBAT reverse engineer data sets into an entity relationship model.                | The student provides an ER diagram that includes all appropriate model information.                                                                                                                                       |
-| SWBAT integrate climate and Yelp data sets by identifying a common data field.     | Submission should include a SQL query that show how the datasets are integrated.                                                                                                                                          |
+| SWBAT design star a schema with dimensions and fact tables.                     | Student provides a diagram of star schema with dimensions and fact tables. |
+| SWBAT extract transform and load from ODS model to DWH model. | Student provides the SQL queries necessary to move the data from ODS to DWH. |
+| SWBAT write SQL queries to generate a correlation report between climate data and Yelp data. | Student provides SQL queries that report business name, temperature, precipitation, and ratings. |
 
 
 ### Suggestion for making the project stand out
@@ -75,9 +75,15 @@ CREATE OR REPLACE DATABASE WEATHER_RESTAURANTS;
 CREATE ORREPLACE SCHEMA STAGING;
 ```
 
-### Loading the YELP DATA (6 JSONs)
+## Data Architecture  Diagram
 
-For each of the 6 JSONS, here are the sql codes and results.
+The following diagram presents the data proceessing plan that is executed by this project:
+
+![Data Processing Diagram](fig/diagram-data_processing_steps.png)
+
+### SWBAT Loading the YELP DATA (6 JSONs)
+
+For each of the 6 JSONS, here are the sql codes and results. I took the liberty of already converting some of the JSON fields to tabular format. Making the subsequential transformation from *staging* into *ods* an easier one.
 
 ### Business
 
@@ -264,9 +270,36 @@ COPY INTO CovidFeatures(business_id, highlights, delivery_or_takeout, grubhub_en
 
 ## Operational Data Store (ODS) Rubric Steps
 
-### Staging Architecture Diagram (dbdiagram.io)
+### [Staging Architecture Diagram](https://dbdiagram.io))
 
-![OSD Diagram](./fig/diagram-osd.png)
+Diagram with 10 entities for the Operational Data Store:
+
+![OSD Diagram](fig/diagram-osd.png)
+
+### Choosing city for extracting data
+
+To identify which city to obtain the weather data, we check for the frequency of where particular cities appear in the data using SQL.
+
+```sql
+-- Extracts cities with most business
+SELECT COUNT(*) as city_count, city
+FROM "WEATHER_RESTAURANTS"."STAGING"."BUSINESS"
+GROUP BY city
+ORDER BY city_count DESC;
+```
+
+Which yields the following table (only 5 first results):
+
+|CITY_COUNT|CITY                               |
+|----------|-----------------------------------|
+|22416     |Austin                             |
+|18203     |Portland                           |
+|13330     |Vancouver                          |
+|12612     |Atlanta                            |
+|10637     |Orlando                            |
+
+
+Given these results, the weather data from the Austin Bergstrom International airport was used ( USW00013904-AUSTIN_BERGSTROM_INTL_AP).
 
 ### Load Weather Data into Staging
 
@@ -319,6 +352,13 @@ COPY INTO PRECIPITATION_PER_INCH
 1 Row(s) produced. Time Elapsed: 1.228s
 
 ```
+#### Data Loaded Screenshot (rubric)
+
+![Precipitation Table Preview](fig/screenshot_load_results_staging-precipitation_per_inch.png)
+
+#### Preview Screenshot
+
+![Precipitation Table Preview](fig/screenshot_load_results_staging-precipitation_per_inch_preview.png)
 
 ### Temperature (CSV)
 
@@ -359,6 +399,13 @@ COPY INTO Temperature_DegreeF
 1 Row(s) produced. Time Elapsed: 0.965s
 
 ```
+#### Data Loaded Screenshot (rubric)
+
+![Precipitation Table Preview](fig/screenshot_load_results_staging-temperature_degreef.png)
+
+#### Preview Screenshot
+
+![Temperature Table Preview](fig/screenshot_load_results_staging-temperature_degreef_preview.png)
 
 ### Loading data into Operational Data Storage (ODS)
 
@@ -577,6 +624,12 @@ INSERT INTO Measurement(location_id, type_id, date, value, normalized_value)
 
 ## Converting from ODS into Datawarehouse (DWH)
 
+### Architecture Diagram
+
+![Diagram DWH Architecture](fig/diagram-dwh.png)
+
+### Loading Data into DWH
+
 ```sql
 CREATE OR REPLACE SCHEMA DWH;
 USE SCHEMA DWH;
@@ -627,13 +680,6 @@ INSERT INTO Dim_Business
       id, location_id, stars, review_count, 
       is_open, categories 
     FROM ODS.Business;
-
-CREATE OR REPLACE TABLE Dim_Checkin(
-  business_id VARCHAR(22),
-  date date,
-  checkin_count INTEGER
-);
-INSERT INTO Dim_Checkin SELECT DISTINCT business_id, date, COUNT(*) from ODS.Checkin GROUP BY business_id, date;
 
 CREATE OR REPLACE TABLE Dim_User(
   user_id VARCHAR(22), 
