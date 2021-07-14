@@ -1,4 +1,4 @@
-rea# Final Project for Designing Data Systems: Weather and Restaurants
+# Final Project for Designing Data Systems: Weather and Restaurants
 
 ## Instructions
 
